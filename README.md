@@ -5,7 +5,7 @@ Aplicação Java web demonstra como trabalhar com Java e o MongoDB, uma alternat
 Saiba mais sobre o MongoDB nessa url: http://www.mongodb.org/
 É possível executar esse projeto de forma simples, da linha de comando. Utilizo o micro-container Spark, veja mais detalhes sobre essa tecnologia: http://www.sparkjava.com/ 
 
-Esse projeto é complemento da palestra: 
+Esse projeto é complemento da palestra: http://www.slideshare.net/edermag/mongodb-altpersistencia
 
 Na pasta comandos-mongo, você encontra exemplos de comandos para manipular dados no MongoDB via shell:
 * Insert, Update, Delete, Query e Aggregation.
