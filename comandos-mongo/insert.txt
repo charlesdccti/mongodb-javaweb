@@ -1,0 +1,22 @@
+# Arquivo com instruções que demonstram o uso de inserts no MongoDB.
+# @author eder.magalhaes
+#
+# Nesse exemplos iremos manipular duas coleções do banco palestra: estudantes e veiculos.
+# Sintaxe: db.colecao.insert( { <doc> } );
+
+# Exemplo simples de insert:
+db.estudantes.insert( { nome: "Eder", curso: "Ciencias da Computacao", universidade: "USCS", matricula: "010"} );
+
+# Exemplo de insert de uma var JavaScript:
+var l = { nome: "Luciana", curso: "Arquitetura", universidade: "USP", matricula: "100", endereco: { logradouro: "Av Paulista - n 100" }, cep: "01212-222", cidade: "SP", uf: "SP" }
+db.estudantes.insert(l)
+
+# Outro exemplo de insert, via método save:
+db.estudantes.save( { nome: "Claudio", universidade: "USCS", matricula: "022" } );
+
+# No terminal, faça o import da base de veiculos.
+mongoimport --db palestra --collection veiculos < veiculos.json
+
+#tentar fazer insert com id = 0, erro de primary key
+db.veiculos.insert( { _id: 0, placa: "CCA-2118", marca: "Palio"} );
+

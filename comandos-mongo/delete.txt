@@ -1,0 +1,14 @@
+# Arquivo com instruções que demonstram como remover documentos no MongoDB.
+# @author eder.magalhaes
+#
+# Nesse exemplos iremos manipular duas coleções do banco palestra: estudantes e veiculos.
+
+# Remove o estudante sem a chave curso
+db.estudantes.remove( { curso: { $exists: false } } );
+
+# Cuidado: limpa a coleção inteira:
+db.estudantes.remove();
+
+# Remove o primeiro registro contido na coleção
+db.estudantes.remove({}, 1);
+

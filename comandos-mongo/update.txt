@@ -1,0 +1,31 @@
+# Arquivo com instruções que demonstram o uso de update no MongoDB.
+# @author eder.magalhaes
+#
+# Nesse exemplos iremos manipular duas coleções do banco palestra: estudantes e veiculos.
+# Sintaxe do comando: db.colecao.update( { <where> }, { <doc> }, upsert, multi )
+
+# Exemplo: 
+db.estudantes.update( { nome: 'Eder' }, { $set: { nome: 'Eder Magalhães'} } );
+
+# Adiciona o documento caso ainda não exista:
+db.estudantes.update( { nome: 'Bill Gates' }, { nome: 'Bill Gates', curso: "Ciências da Computação", universidade: "USCS" }, true, false );
+
+# O trecho a seguir pesquisa e atualiza um documento
+var bill = db.estudantes.findOne( { nome: 'Bill Gates' } );
+bill.matricula = '555';
+db.estudantes.save(bill);
+
+
+# Exemplo de update errado!!! Ele vai eliminar os dados do primeiro doc de veiculos!
+db.veiculos.update({}, { tipo: 'Passeio' });
+
+# Exemplo do update correto, com multi igual a true:
+db.veiculos.update({},  { $set: { tipo: 'passeio' } }, false, true);
+
+# Exemplo de como usar o update para inserir um elemento no array 'opcionais' no veiculo:
+db.veiculos.update( { placa: 'FIT-2312' }, { $push: { opcionais: "airbag" } } );
+
+# Com addToSet ele só adiciona senão existir o elemento no array:
+db.veiculos.update( { placa: 'FIT-2312' }, { $addToSet: { proprietarios:  {  "nome" : "Steve Jobs",  "cpf" : "466" } } } );
+
+

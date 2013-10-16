@@ -1,0 +1,41 @@
+# Arquivo com instruções que demonstram como realizar consultas no MongoDB.
+# @author eder.magalhaes
+#
+# Nesse exemplos iremos manipular duas coleções do banco palestra: estudantes e veiculos.
+# Sintaxe do comando find: db.colecao.find( { <where> }, { <select> } );
+# Sintaxe do comando findOne: db.colecao.findOne( { <where> }, { <select> } );
+
+# Exemplo de como contar a qtde de documentos em veiculos:
+db.veiculos.count();
+db.veiculos.find().count();
+
+# Exemplo lista todos (20 primeiros) documentos de estudantes:
+db.estudantes.find();
+
+# Exemplo exibe o primeiro documento de estudantes:
+db.estudantes.findOne();
+
+# Para exibir a lista em um formato mais amigável, use a função pretty():
+db.estudantes.find().pretty();
+
+# Exemplo demonstra só no nome do estudante de estudantes no curso ciencias:
+db.estudantes.find({ curso: 'Arquitetura' }, { _id: 0, nome: 1 });
+
+
+# Em conjunto com as funções de pesquisa, é possível utilizar:
+#   - skip: pula um número de registros;
+#   - limit: determina o nro de registros que devem ser consultador;
+#   - sort: define um critério de ordenação
+
+# Exemplo de skip:
+db.estudantes.find().skip(2).pretty();
+
+# Exemplo de limit:
+db.estudantes.find().limit(2).pretty();
+
+# Exemplo de sort
+db.estudantes.find().sort( { nome:1 } ).pretty();
+
+# Exemplo de find com filtro e combinação de skip, limit e sort
+db.veiculos.find( { 'tipo':'Passei' } ).skip( 1 ).limit( 2 ).sort( { 'marca': -1 } ).pretty();
+

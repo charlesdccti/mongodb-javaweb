@@ -1,0 +1,31 @@
+# Arquivo com instruções complementares ao shell do MongoDB para manipular os dados.
+# @author eder.magalhaes
+
+# Exibe uma lista com os bancos (instâncias) disponíveis:
+show dbs;
+
+# Exibe uma lista com as coleções que pertencem ao banco vigente:
+show colllections;
+
+# Exibe status do banco vigente:
+db.stats();
+
+# Eliminar uma coleção:
+db.estudantes.drop();
+
+# Eliminar a instância do banco (selecionado no shell):
+db.dropDatabase();
+
+
+# Como fazer o backup de uma coleção (JavaScript);
+bkp = db.estudantes_bkp; db.estudantes.find().forEach(
+      function (doc) { b.insert( doc) }
+  );
+
+
+# Do terminal (prompt), importar dados para o MongoDB:
+mongoimport --db palestra --collection veiculos < veiculos.json
+
+# Visualizar a versão do MongoDB via terminal (prompt):
+mongod -version
+
