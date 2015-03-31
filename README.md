@@ -22,7 +22,7 @@ Tecnologias utilizadas na implementação:
 
 Pré-requisitos
 -------
-* JDK - versão 1.7 do Java, ou mais recente;
+* JDK - versão 1.8 do Java, ou mais recente;
 * Qualquer IDE Java com suporte ao Maven;
 * Maven - para build e dependências.
 * MongoDB versão 2.4.5;

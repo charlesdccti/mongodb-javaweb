@@ -10,8 +10,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     
     <dependencies>
@@ -22,10 +22,16 @@
         </dependency>
 
         <dependency>
-            <groupId>spark</groupId>
-            <artifactId>spark</artifactId>
-            <version>0.9.9.4-SNAPSHOT</version>
+            <groupId>com.sparkjava</groupId>
+            <artifactId>spark-core</artifactId>
+            <version>2.1</version>
         </dependency>
+        
+        <dependency>
+		    <groupId>com.sparkjava</groupId>
+		    <artifactId>spark-template-freemarker</artifactId>
+		    <version>2.0.0</version>
+		</dependency>
 
         <dependency>
             <groupId>org.freemarker</groupId>
@@ -45,12 +51,5 @@
             <version>1.7</version>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>Spark repository</id>
-            <url>http://www.sparkjava.com/nexus/content/repositories/spark/</url>
-        </repository>
-    </repositories>
 
 </project>

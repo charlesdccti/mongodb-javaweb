@@ -34,7 +34,7 @@
 							<div class="span10">
 								
 									
-									<p><strong>Implementation-Title:</strong> Java c/ Tiles, Bootstrap, JQuery usando MongoDB</p>
+									<p><strong>Implementation-Title:</strong> Java c/ Freemaker, Bootstrap, JQuery usando MongoDB</p>
 								
 									
 									<p><strong>Built-by:</strong> YaW Tecnologia</p>

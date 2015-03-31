@@ -1,25 +1,20 @@
 package br.com.yaw.mongo;
 
+import static spark.Spark.exception;
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static spark.Spark.setPort;
+import static spark.SparkBase.port;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.List;
 
 import org.bson.types.ObjectId;
 
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import spark.ModelAndView;
+import spark.template.freemarker.FreeMarkerEngine;
 import br.com.yaw.mongo.dao.MercadoriaDAOMongoDB;
 import br.com.yaw.mongo.model.Mercadoria;
-import freemarker.template.Configuration;
 import freemarker.template.SimpleHash;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
 
 /**
  * Classe executável da aplicação. Define a controller do Spark e as urls de recursos da aplicação.
@@ -42,21 +37,12 @@ public class MercadoriaController {
 	//Atenção: essa é a url para acessar o MongoDB, modifique se necessário
 	private static final String URL_LOCAL_MONGOBD = "mongodb://localhost";
 		
-	private final Configuration cfg;
-    private final MercadoriaDAOMongoDB mercadoriaDao;
+	private final MercadoriaDAOMongoDB mercadoriaDao;
     
     public MercadoriaController(String mongoURI) throws Exception {
         mercadoriaDao = new MercadoriaDAOMongoDB(URL_LOCAL_MONGOBD);
-        cfg = createFreemarkerConfiguration();
-        setPort(8082);
-        
+        port(8082);
         mapeiaUrlRecursos();
-    }
-    
-    private Configuration createFreemarkerConfiguration() {
-        Configuration retVal = new Configuration();
-        retVal.setClassForTemplateLoading(MercadoriaController.class, "/freemarker");
-        return retVal;
     }
     
     /**
@@ -71,143 +57,121 @@ public class MercadoriaController {
      * @throws IOException - se algum problema ocorrer durante o processamento
      */
     private void mapeiaUrlRecursos() throws IOException {
-    	//url principal da aplicação
-    	get(new FreemarkerBasedRoute("/", "lista_template.ftl") {
-            @Override
-            public void doHandle(Request request, Response response, Writer writer)
-            		throws IOException, TemplateException {
-                
-            	List<Mercadoria> mercadorias = mercadoriaDao.getAll();
-            	SimpleHash root = new SimpleHash();
-            	
-            	root.put("activeLista", true);
-                root.put("mercadorias", mercadorias);
-                template.process(root, writer);
+    	//root - list page
+    	get("/", (request, response) -> {
+    		List<Mercadoria> mercadorias = mercadoriaDao.getAll();
+        	SimpleHash root = new SimpleHash();
+        	
+        	root.put("activeLista", true);
+            root.put("mercadorias", mercadorias);
+            
+            if (request.params(":error") != null) {
+            	root.put("error", request.params("error"));
             }
-        });
+            
+            return new ModelAndView(root, "lista_template.ftl");
+    	}, new CustomFreeMarkerEngine());
     	
-    	//url da inclusaoo
-    	get(new FreemarkerBasedRoute("/new", "mercadoria_template.ftl") {
-            @Override
-            public void doHandle(Request request, Response response, Writer writer)
-            		throws IOException, TemplateException {
-            	SimpleHash root = new SimpleHash();
-            	root.put("activeIncluir", true);
-                root.put("mercadoria", new MercadoriaConverter().toRequest(new Mercadoria()));
-
-                template.process(root, writer);
-            }
-        });
+    	//new form
+    	get("/new", (request, response) -> {
+    		SimpleHash root = new SimpleHash();
+        	root.put("activeIncluir", true);
+            root.put("mercadoria", new MercadoriaConverter().toRequest(new Mercadoria()));
+            
+            return new ModelAndView(root, "mercadoria_template.ftl");
+    	}, new CustomFreeMarkerEngine());
     	
-    	//url da edicao
-    	get(new FreemarkerBasedRoute("/edit/:id", "mercadoria_template.ftl") {
-            @Override
-            public void doHandle(Request request, Response response, Writer writer)
-            		throws IOException, TemplateException {
-            	String idMercadoria = request.params(":id");
-            	
-            	Mercadoria mercadoria = null;
-            	
-            	try {
-            		mercadoria = mercadoriaDao.findById(new ObjectId(idMercadoria));
-            	} catch (Exception ex) {
-            		response.redirect("/");
-            		return;
-            	}
-            	
-                SimpleHash root = new SimpleHash();
-                root.put("activeIncluir", true);
-                root.put("mercadoria", new MercadoriaConverter().toRequest(mercadoria));
-
-                template.process(root, writer);
-            }
-        });
+    	//update form
+    	get("/edit/:id", (request, response) -> {
+    		String idMercadoria = request.params(":id");
+        	
+        	Mercadoria mercadoria = null;
+        	
+        	try {
+        		mercadoria = mercadoriaDao.findById(new ObjectId(idMercadoria));
+        	} catch (Exception ex) {
+        		response.redirect("/?error=Registro não econtrado!");
+        		return null;
+        	}
+        	
+            SimpleHash root = new SimpleHash();
+            root.put("activeIncluir", true);
+            root.put("mercadoria", new MercadoriaConverter().toRequest(mercadoria));
+            
+            return new ModelAndView(root, "mercadoria_template.ftl");
+    	}, new CustomFreeMarkerEngine());
     	
-    	post(new FreemarkerBasedRoute("/save", "mercadoria_template.ftl") {
-            @Override
-            protected void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
-            	try {
-                	Mercadoria m = new MercadoriaConverter().toObject(request);
-                    mercadoriaDao.save(m);
-                    
-                    response.redirect("/");
-            	} catch (Exception ex) {
-            		SimpleHash root = new SimpleHash();
-            		root.put("error", ex.getMessage());
-            		template.process(root, writer);
-            	}
-            }
-        });
+    	//persist controller (save and update)
+    	post("/save", (request, response) -> {
+    		Mercadoria mercadoria = new MercadoriaConverter().toObject(request);
+    		try {
+    			mercadoriaDao.save(mercadoria);
+                response.redirect("/");
+                return null;
+        	} catch (Exception ex) {
+        		SimpleHash root = new SimpleHash();
+        		root.put("mercadoria", new MercadoriaConverter().toRequest(mercadoria));
+        		root.put("error", ex.getMessage());
+        		return new ModelAndView(root, "mercadoria_template.ftl");
+        	}
+    	}, new CustomFreeMarkerEngine());
     	
-    	post(new FreemarkerBasedRoute("/delete/:id", "mercadoria_template.ftl") {
-            @Override
-            protected void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
-            	String idMercadoria = request.params(":id");
-            	
-            	try {
-            		Mercadoria mercadoria = mercadoriaDao.findById(new ObjectId(idMercadoria));
-            		mercadoriaDao.remove(mercadoria);
-            		
-            		response.redirect("/");
-            	} catch (Exception ex) {
-            		SimpleHash root = new SimpleHash();
-            		root.put("error", ex.getMessage());
-            		template.process(root, writer);
-            	}
-            }
-        });
+    	//delete controller
+    	post("/delete/:id", (request, response) -> {
+    		String idMercadoria = request.params(":id");
+    		
+    		Mercadoria mercadoria;
+    		
+    		try {
+    			mercadoria = mercadoriaDao.findById(new ObjectId(idMercadoria));
+    		} catch (Exception ex) {
+    			response.redirect("/?error=Registro não econtrado!");
+        		return null;
+    		}
+    		
+    		try {
+    			mercadoriaDao.remove(mercadoria);
+                response.redirect("/");
+                return null;
+        	} catch (Exception ex) {
+        		SimpleHash root = new SimpleHash();
+        		root.put("mercadoria", new MercadoriaConverter().toRequest(mercadoria));
+        		root.put("error", ex.getMessage());
+        		return new ModelAndView(root, "mercadoria_template.ftl");
+        	}
+    	}, new CustomFreeMarkerEngine());
     	
-    	//url sobre
-    	get(new FreemarkerBasedRoute("/sobre", "sobre_template.ftl") {
-            @Override
-            public void doHandle(Request request, Response response, Writer writer)
-            		throws IOException, TemplateException { 
-            	
-            	SimpleHash root = new SimpleHash();
-            	root.put("activeSobre", true);
-                template.process(root, writer);
-            }
-    	    
-        });
+    	//about page
+    	get("/about", (request, response) -> {
+    		SimpleHash root = new SimpleHash();
+        	root.put("activeAbout", true);
+            
+            return new ModelAndView(root, "sobre_template.ftl");
+    	}, new CustomFreeMarkerEngine());
     	
-    	//direciona os erros
-        get(new FreemarkerBasedRoute("/internal_error", "error_template.ftl") {
-            @Override
-            protected void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
-                SimpleHash root = new SimpleHash();
-
-                root.put("error", "System has encountered an error.");
-                template.process(root, writer);
-            }
-        });
+    	//exception handle
+    	exception(RuntimeException.class, (e, request, response) -> {
+    	    response.redirect("/internal_error");
+    	});
+    	
+    	get("/internal_error", (request, response) -> {
+    		SimpleHash root = new SimpleHash();
+        	root.put("error", "System has encountered an error.");
+            
+            return new ModelAndView(root, "error_template.ftl");
+    	}, new CustomFreeMarkerEngine());
     }
     
-    /**
-     * Implementa tratamento basico de exceção.
-     */
-    private abstract class FreemarkerBasedRoute extends Route {
-        final Template template;
-
-        protected FreemarkerBasedRoute(final String path, final String templateName) throws IOException {
-            super(path);
-            template = cfg.getTemplate(templateName);
-        }
-
-        @Override
-        public Object handle(Request request, Response response) {
-            StringWriter writer = new StringWriter();
-            try {
-                doHandle(request, response, writer);
-            } catch (Exception e) {
-                e.printStackTrace();
-                response.redirect("/internal_error");
-            }
-            return writer;
-        }
-
-        protected abstract void doHandle(final Request request, final Response response, final Writer writer)
-                throws IOException, TemplateException;
-
+    public class CustomFreeMarkerEngine extends FreeMarkerEngine {
+    	
+    	@Override
+    	public String render(ModelAndView modelAndView) {
+    		if (modelAndView == null) {
+    			return ""; //workaround for response.redirect
+    		}
+    		return super.render(modelAndView);
+    	}
+    	
     }
     
 }

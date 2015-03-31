@@ -16,7 +16,7 @@
 					<#assign activeI= "" />
 				</#if>
 				
-				<#if (activeSobre)?has_content>
+				<#if (activeAbout)?has_content>
 					<#assign activeS= "active" />
 				<#else>
 					<#assign activeS= "" />
@@ -30,7 +30,7 @@
 		        </li>
 				<li class="divider"></li>
 				<li class="${activeS}">
-					<a href="/sobre"><i class="icon-book"></i> Sobre</a>
+					<a href="/about"><i class="icon-book"></i> Sobre</a>
 				</li>
 			</ul>
 		</div>
